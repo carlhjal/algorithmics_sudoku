@@ -27,27 +27,26 @@ def fill(board, row, column):
     possible_vals = get_possible(board, row, column)
     if len(possible_vals) == 1:
         board[row, column] = possible_vals[0]
+        #print(f"printing the board\n {board}")
         return board
+    return board
 
 def solver(board):
     """Solves the sudoku"""
     # arbitrary stop
-    for i in range(10):
+    for i in range(100):
         for row in range(9):
             for column in range(9):
-                print(board[row,column])
-                if board[row,column] == 0:
+                if board[row,column] != 0:
                     continue
                 board = fill(board, row, column)
+    return board
 
 def main():
     random.seed(123)
     empty_board = np.zeros((9,9), dtype=np.uint8)
-    sudoku = gen.gen(empty_board, 30)
+    sudoku = gen.gen(empty_board, 40)
     bp.print_board(sudoku)
-    print(sudoku[0, 3])
-    #teestestse = get_possible(sudoku, 0,0)
-    #print(teestestse)
     solved_sudoku = solver(sudoku)
     bp.print_board(solved_sudoku)
 
