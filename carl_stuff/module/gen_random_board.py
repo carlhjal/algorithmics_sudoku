@@ -7,7 +7,6 @@ but nice for testing
 
 import random
 import numpy as np
-import board_printer as bp
 
 def gen(empty_board, nums_keep):
     """
@@ -33,11 +32,3 @@ def gen(empty_board, nums_keep):
         empty_board[zero_ind//9][zero_ind%9] = 0
 
     return empty_board
-    
-def main():
-    empty_board = np.zeros((9,9), dtype=np.uint8)
-    sudoku = gen(empty_board, 17)
-    bp.print_board(sudoku)
-
-if __name__ == "__main__":
-    main()
