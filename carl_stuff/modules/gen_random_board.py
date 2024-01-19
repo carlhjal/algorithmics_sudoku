@@ -4,13 +4,18 @@ this generator just makes one sudoku (theoretically up to 9)
 but nice for testing
 """
 
+import random
 import numpy as np
 import print_board
 
-def gen(empty_board):
+def gen(empty_board, nums_keep):
     """
     Very stupid generator but makes a valid sudoku and numbers can just be removed to make it harder
+    nums_keep is how many numbers should remain in the sudoku, has to be more than 17
     """
+
+    assert nums_keep > 16
+
     num_arr = np.array([1,2,3,4,5,6,7,8,9])
     
     for i in range(9):
@@ -18,13 +23,19 @@ def gen(empty_board):
             num_arr = np.roll(num_arr, 1)
         empty_board[i] = np.roll(num_arr, 3*i)
     
+    num_els = empty_board.shape[0] * empty_board.shape[1]
+    indices = [i for i in range(num_els)]
+
+    for i in range(num_els - nums_keep):
+        zero_ind = random.choice(indices)
+        indices.remove(zero_ind)
+        empty_board[zero_ind//9][zero_ind%9] = 0
+
     return empty_board
     
-
-
 def main():
     empty_board = np.zeros((9,9), dtype=np.uint8)
-    sudoku = gen(empty_board)
+    sudoku = gen(empty_board, 17)
     print_board.print_board(sudoku)
 
 if __name__ == "__main__":
