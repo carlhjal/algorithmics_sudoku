@@ -1,3 +1,7 @@
+"""
+For printing boards
+"""
+
 import numpy as np
 
 def print_board(board):
