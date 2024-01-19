@@ -16,14 +16,24 @@ class SudokuSolver:
             prev_matrix = self.matrix.copy()
             self.updatePossible()
             self.assignValue()
-            if (self.matrix == prev_matrix).all():
-                break
+
+            if np.array_equal(self.matrix, prev_matrix):
+                self.updatePossible()
+                self.resolveRow()
+                self.updatePossible()
+                self.resolveCol()
+                self.assignValue()
+                # print(type(self.matrix))
+                # print(type(prev_matrix))
+                # print(self.matrix == prev_matrix)
 
             end = time.time()-start
-
-            grid_copy = self.grid
+            grid_copy = self.grid.copy()
             cv2.putText(grid_copy, f"Time taken: {round(end*1000)} ms", (10, grid_copy.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            
             cv2.imshow("Sudoku", grid_copy)
+            if np.array_equal(self.matrix, prev_matrix):
+                break
         
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -36,7 +46,7 @@ class SudokuSolver:
             for j in range(3):
                 box.append(self.matrix[i + startRow][j + startCol])
         return box
-        
+    
     def findPossible(self):
         for i, row in enumerate(self.matrix):
             for j, val in enumerate(row):
@@ -71,6 +81,37 @@ class SudokuSolver:
                         cv2.putText(self.grid, str(self.matrix[i][j]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
                     else:
                         self.unassigned += 1
+
+    def resolveRow(self, trans=False):
+        for i, row in enumerate(self.matrix):
+            positions = list()
+            numbers = list()
+            for j, val in enumerate(row):
+                if isinstance(val, list):
+                    for _ in range(len(val)):
+                        positions.append((i,j))
+                    numbers += val
+            numbers = np.array(numbers)
+            unique, counts = np.unique(numbers, return_counts=True)
+            for idx, count in enumerate(counts):
+                if count == 1:
+                    coords = positions[int(np.where(numbers==unique[idx])[0])]
+                    self.matrix[coords[0]][coords[1]] = unique[idx]
+                    if trans:
+                        px1 = int(self.cell/2+self.cell*coords[1]+8)
+                        px2 = int(self.cell/2+self.cell*coords[0])
+                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+                    else:
+                        px1 = int(self.cell/2+self.cell*coords[0]+8)
+                        px2 = int(self.cell/2+self.cell*coords[1])
+                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+
+    def resolveCol(self):
+        self.matrix = self.matrix.transpose()
+        self.resolveRow(True)
+        self.matrix = self.matrix.transpose()
+
+
                         
     def showSudokuInit(self):
         self.grid = cv2.imread('./ira_stuff/res/sudoku_blankgrid.png')
@@ -95,14 +136,14 @@ class SudokuSolver:
 
 if __name__ == "__main__":
     matrix = np.array([
-        [5,0,0,4,6,7,3,0,9],
-        [9,0,3,8,1,0,4,2,7],
-        [1,7,4,2,0,3,0,0,0],
-        [2,3,1,9,7,6,8,5,4],
-        [8,5,7,1,2,4,0,9,0],
-        [4,9,6,3,0,8,1,7,2],
-        [0,0,0,0,8,9,2,6,0],
-        [7,8,2,6,4,1,0,0,5],
-        [0,1,0,0,0,0,7,0,8]
+        [0,5,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,0,0],
+        [0,0,8,0,0,0,7,9,0],
+        [8,0,0,0,1,5,0,0,2],
+        [0,0,6,8,0,4,0,0,0],
+        [2,0,0,0,6,0,4,0,1],
+        [0,0,0,0,0,7,0,0,9],
+        [0,1,9,0,0,0,0,5,0],
+        [6,4,7,0,0,0,0,0,0]
     ], dtype=object)
     ss = SudokuSolver(matrix)
