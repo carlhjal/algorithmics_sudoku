@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import time
 
 class SudokuSolver:
     def __init__(self, matrix):
@@ -8,6 +9,7 @@ class SudokuSolver:
 
         self.showSudokuInit()
         
+        start = time.time()
         self.findPossible()
         self.assignValue()
         while self.unassigned != 0:
@@ -16,7 +18,12 @@ class SudokuSolver:
             self.assignValue()
             if (self.matrix == prev_matrix).all():
                 break
-            cv2.imshow("Sudoku", self.grid)
+
+            end = time.time()-start
+
+            grid_copy = self.grid
+            cv2.putText(grid_copy, f"Time taken: {round(end*1000)} ms", (10, grid_copy.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            cv2.imshow("Sudoku", grid_copy)
         
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -73,6 +80,8 @@ class SudokuSolver:
         
         height, width, color = self.grid.shape
         self.cell = int((height-45)/8)
+
+        self.grid = cv2.copyMakeBorder(self.grid, 0, 50, 0, 0, cv2.BORDER_CONSTANT, value=(255,255,255))
         
         for i, row in enumerate(self.matrix):
             for j, val in enumerate(row):
