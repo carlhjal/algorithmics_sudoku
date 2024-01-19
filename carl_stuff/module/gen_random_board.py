@@ -7,7 +7,7 @@ but nice for testing
 
 import random
 import numpy as np
-import print_board
+import board_printer as bp
 
 def gen(empty_board, nums_keep):
     """
@@ -37,7 +37,7 @@ def gen(empty_board, nums_keep):
 def main():
     empty_board = np.zeros((9,9), dtype=np.uint8)
     sudoku = gen(empty_board, 17)
-    print_board.print_board(sudoku)
+    bp.print_board(sudoku)
 
 if __name__ == "__main__":
     main()
