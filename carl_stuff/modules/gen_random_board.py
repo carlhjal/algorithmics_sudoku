@@ -1,6 +1,7 @@
 """
 TODO make a good generator that makes use of a solver to make actually random sudokus
-this generator just makes one sudoku (theoretically up to 9)
+this generator just makes one sudoku
+after removing numbers its technically a lot of different sudokus, but they all have the same solution
 but nice for testing
 """
 
