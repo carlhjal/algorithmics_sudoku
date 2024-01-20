@@ -47,7 +47,9 @@ class SudokuSolver:
                 self.solved = False
                 break
         if self.show:
+            cv2.putText(self.grid, f"Time taken: {round(self.end*1000)} ms", (10, self.grid.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
             cv2.waitKey(0)
+            cv2.imwrite('./ira_stuff/res/sudoku_solved.jpg', self.grid)
             cv2.destroyAllWindows()
 
     def countZero(self):
@@ -203,7 +205,7 @@ if __name__ == "__main__":
         [6,4,7,0,0,0,0,0,0]
     ], dtype=object)
     start = time.time()
-    ss = SudokuSolver(matrix, 0.1)
+    ss = SudokuSolver(matrix, 0, True)
     end = time.time()
     print(ss.matrix)
     print(end-start)
