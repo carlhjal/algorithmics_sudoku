@@ -3,35 +3,40 @@ import cv2
 import time
 
 class SudokuSolver:
-    def __init__(self, matrix):
+    def __init__(self, matrix, delay=0):
         self.matrix = matrix
         self.unassigned = -1
+        self.delay = delay
+        self.end = 0
+        self.start = time.time()
 
         self.showSudokuInit()
         
-        start = time.time()
         self.findPossible()
         self.assignValue()
+
         while self.unassigned != 0:
             prev_matrix = self.matrix.copy()
+
             self.updatePossible()
             self.assignValue()
+            self.showSudoku()
 
             if np.array_equal(self.matrix, prev_matrix):
                 self.updatePossible()
                 self.resolveRow()
+                self.showSudoku()
+
+            if np.array_equal(self.matrix, prev_matrix):
                 self.updatePossible()
                 self.resolveCol()
-                self.assignValue()
-                # print(type(self.matrix))
-                # print(type(prev_matrix))
-                # print(self.matrix == prev_matrix)
+                self.showSudoku()
 
-            end = time.time()-start
-            grid_copy = self.grid.copy()
-            cv2.putText(grid_copy, f"Time taken: {round(end*1000)} ms", (10, grid_copy.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
-            
-            cv2.imshow("Sudoku", grid_copy)
+            if np.array_equal(self.matrix, prev_matrix):
+                self.updatePossible()
+                self.resolveBox()
+                self.showSudoku()
+
             if np.array_equal(self.matrix, prev_matrix):
                 break
         
@@ -40,19 +45,21 @@ class SudokuSolver:
         
     def getBox(self, i, j):
         box = list()
+        position = list()
         startRow = i - i % 3
         startCol = j - j % 3
         for i in range(3):
             for j in range(3):
                 box.append(self.matrix[i + startRow][j + startCol])
-        return box
+                position.append((i + startRow, j + startCol))
+        return box, position
     
     def findPossible(self):
         for i, row in enumerate(self.matrix):
             for j, val in enumerate(row):
                 if val == 0:
                     possible_val = list()
-                    box = self.getBox(i, j)
+                    box, _ = self.getBox(i, j)
                     for number in range(1, 10):
                         if number not in row and number not in self.matrix[:, j] and number not in box:
                             possible_val.append(number)
@@ -63,7 +70,7 @@ class SudokuSolver:
             for j, val in enumerate(row):
                 if isinstance(val, list):
                     possible_val = list()
-                    box = self.getBox(i, j)
+                    box, _ = self.getBox(i, j)
                     for number in range(1, 10):
                         if number not in row and number not in self.matrix[:, j] and number not in box:
                             possible_val.append(number)
@@ -111,7 +118,26 @@ class SudokuSolver:
         self.resolveRow(True)
         self.matrix = self.matrix.transpose()
 
-
+    def resolveBox(self):
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                box, coords = self.getBox(i, j)
+                positions = list()
+                numbers = list()
+                for idx, val in enumerate(box):
+                    if isinstance(val, list):
+                        for _ in range(len(val)):
+                            positions.append(coords[idx])
+                        numbers += val
+                numbers = np.array(numbers)
+                unique, counts = np.unique(numbers, return_counts=True)
+                for idx, count in enumerate(counts):
+                    if count == 1:
+                        coords = positions[int(np.where(numbers==unique[idx])[0])]
+                        self.matrix[coords[0]][coords[1]] = unique[idx]
+                        px1 = int(self.cell/2+self.cell*coords[0]+8)
+                        px2 = int(self.cell/2+self.cell*coords[1])
+                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
                         
     def showSudokuInit(self):
         self.grid = cv2.imread('./ira_stuff/res/sudoku_blankgrid.png')
@@ -134,16 +160,29 @@ class SudokuSolver:
 
         cv2.imshow("Sudoku", self.grid)
 
+    def showSudoku(self):
+        self.end += time.time()-self.start
+        grid_copy = self.grid.copy()
+        cv2.putText(grid_copy, f"Time taken: {round(self.end*1000)} ms", (10, grid_copy.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            
+        cv2.imshow("Sudoku", grid_copy)
+        cv2.waitKey(1)
+        time.sleep(self.delay)
+        self.start = time.time()
+
+
+
+
 if __name__ == "__main__":
     matrix = np.array([
-        [3,0,6,5,0,8,4,0,0],
-        [5,2,0,0,0,0,0,0,0],
-        [0,8,7,0,0,0,0,3,1],
-        [0,0,3,0,1,0,0,8,0],
-        [9,0,0,8,6,3,0,0,5],
-        [0,5,0,0,9,0,6,0,0],
-        [1,3,0,0,0,0,2,5,0],
-        [0,0,0,0,0,0,0,7,4],
-        [0,0,5,2,0,6,3,0,0]
+        [0,5,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,0,0],
+        [0,0,8,0,0,0,7,9,0],
+        [8,0,0,0,1,5,0,0,2],
+        [0,0,6,8,0,4,0,0,0],
+        [2,0,0,0,6,0,4,0,1],
+        [0,0,0,0,0,7,0,0,9],
+        [0,1,9,0,0,0,0,5,0],
+        [6,4,7,0,0,0,0,0,0]
     ], dtype=object)
-    ss = SudokuSolver(matrix)
+    ss = SudokuSolver(matrix, 0.1)
