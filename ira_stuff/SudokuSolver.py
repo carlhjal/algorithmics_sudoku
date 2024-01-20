@@ -3,14 +3,19 @@ import cv2
 import time
 
 class SudokuSolver:
-    def __init__(self, matrix, delay=0):
+    def __init__(self, matrix, delay=0, show=True):
         self.matrix = matrix
         self.unassigned = -1
         self.delay = delay
         self.end = 0
         self.start = time.time()
+        self.count = 0
+        self.solved = True
+        self.show = show
 
-        self.showSudokuInit()
+        self.countZero()
+
+        if self.show: self.showSudokuInit()
         
         self.findPossible()
         self.assignValue()
@@ -20,28 +25,35 @@ class SudokuSolver:
 
             self.updatePossible()
             self.assignValue()
-            self.showSudoku()
+            
+            if self.show: self.showSudoku()
 
             if np.array_equal(self.matrix, prev_matrix):
                 self.updatePossible()
                 self.resolveRow()
-                self.showSudoku()
+                if self.show: self.showSudoku()
 
             if np.array_equal(self.matrix, prev_matrix):
                 self.updatePossible()
                 self.resolveCol()
-                self.showSudoku()
+                if self.show: self.showSudoku()
 
             if np.array_equal(self.matrix, prev_matrix):
                 self.updatePossible()
                 self.resolveBox()
-                self.showSudoku()
+                if self.show: self.showSudoku()
 
             if np.array_equal(self.matrix, prev_matrix):
+                self.solved = False
                 break
-        
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if self.show:
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+    def countZero(self):
+        for row in self.matrix:
+            self.count+=list(row).count(0)
+        self.count = 81 - self.count
         
     def getBox(self, i, j):
         box = list()
@@ -83,9 +95,10 @@ class SudokuSolver:
                 if isinstance(val, list):
                     if len(val) == 1:
                         self.matrix[i][j] = val[0]
-                        px1 = int(self.cell/2+self.cell*i+8)
-                        px2 = int(self.cell/2+self.cell*j)
-                        cv2.putText(self.grid, str(self.matrix[i][j]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+                        if self.show:
+                            px1 = int(self.cell/2+self.cell*i+8)
+                            px2 = int(self.cell/2+self.cell*j)
+                            cv2.putText(self.grid, str(self.matrix[i][j]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
                     else:
                         self.unassigned += 1
 
@@ -104,14 +117,15 @@ class SudokuSolver:
                 if count == 1:
                     coords = positions[int(np.where(numbers==unique[idx])[0])]
                     self.matrix[coords[0]][coords[1]] = unique[idx]
-                    if trans:
-                        px1 = int(self.cell/2+self.cell*coords[1]+8)
-                        px2 = int(self.cell/2+self.cell*coords[0])
-                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
-                    else:
-                        px1 = int(self.cell/2+self.cell*coords[0]+8)
-                        px2 = int(self.cell/2+self.cell*coords[1])
-                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+                    if self.show:
+                        if trans:
+                            px1 = int(self.cell/2+self.cell*coords[1]+8)
+                            px2 = int(self.cell/2+self.cell*coords[0])
+                            cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+                        else:
+                            px1 = int(self.cell/2+self.cell*coords[0]+8)
+                            px2 = int(self.cell/2+self.cell*coords[1])
+                            cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
 
     def resolveCol(self):
         self.matrix = self.matrix.transpose()
@@ -135,9 +149,10 @@ class SudokuSolver:
                     if count == 1:
                         coords = positions[int(np.where(numbers==unique[idx])[0])]
                         self.matrix[coords[0]][coords[1]] = unique[idx]
-                        px1 = int(self.cell/2+self.cell*coords[0]+8)
-                        px2 = int(self.cell/2+self.cell*coords[1])
-                        cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
+                        if self.show:
+                            px1 = int(self.cell/2+self.cell*coords[0]+8)
+                            px2 = int(self.cell/2+self.cell*coords[1])
+                            cv2.putText(self.grid, str(self.matrix[coords[0]][coords[1]]), (px2, px1), cv2.FONT_HERSHEY_SIMPLEX, 1, (20, 40, 200), 2)
                         
     def showSudokuInit(self):
         self.grid = cv2.imread('./ira_stuff/res/sudoku_blankgrid.png')
@@ -148,7 +163,9 @@ class SudokuSolver:
         height, width, color = self.grid.shape
         self.cell = int((height-45)/8)
 
-        self.grid = cv2.copyMakeBorder(self.grid, 0, 50, 0, 0, cv2.BORDER_CONSTANT, value=(255,255,255))
+        self.grid = cv2.copyMakeBorder(self.grid, 0, 80, 0, 0, cv2.BORDER_CONSTANT, value=(255,255,255))
+        cv2.putText(self.grid, f"Numbers given: {self.count}", (10, self.grid.shape[0]-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
         
         for i, row in enumerate(self.matrix):
             for j, val in enumerate(row):
@@ -185,4 +202,8 @@ if __name__ == "__main__":
         [0,1,9,0,0,0,0,5,0],
         [6,4,7,0,0,0,0,0,0]
     ], dtype=object)
+    start = time.time()
     ss = SudokuSolver(matrix, 0.1)
+    end = time.time()
+    print(ss.matrix)
+    print(end-start)
