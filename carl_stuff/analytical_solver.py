@@ -1,3 +1,7 @@
+"""
+Can solve boards with about 30 given numbers
+"""
+
 import numpy as np
 import module.board_printer as bp
 import module.gen_random_board as gen

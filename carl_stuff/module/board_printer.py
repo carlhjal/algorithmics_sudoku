@@ -9,16 +9,11 @@ def print_board(board):
     Prints the board
     """
     sep = "-"*25
-
     for i in range(9):
-    
         if not i % 3:
             print(sep)
-
         row = (str(board[i]).strip("[]"))
-
         print("|" + " " + row[:6] + "|" + " " +  row[6:12] + "|" + " " + row[12:] + " " + "|")
-
     print(sep)
 
 def main():
