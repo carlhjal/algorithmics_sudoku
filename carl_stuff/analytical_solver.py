@@ -2,17 +2,17 @@
 Can solve boards with about 30 given numbers
 """
 
+import random
+import time
 import numpy as np
 import module.board_printer as bp
 import module.gen_random_board as gen
-import random
-import time
 
 # quite like this logic
 # https://medium.com/codex/building-a-simple-sudoku-solver-in-python-with-numpy-1a8ea6f5bff5
 
 def get_quadrant_corner(row, column):
-    """returns upper left corner of quadrant"""
+    """returns coords of upper left corner of quadrant"""
     left = row//3*3
     upper = column//3*3
     return left, upper
@@ -47,6 +47,7 @@ def solver_1(board):
 def solver_2_helper(board):
     """Helper function for solver 2, this is just to avoid too much indentation"""
     changed = True
+    possible_vals_dict = {}
     while changed:
         changed = False
         possible_vals_dict = {}
@@ -87,42 +88,29 @@ def check_invalidity(board, row, column):
     return False
 
 def brute_force_solution(board):
-    """Im gonna have a meltdown"""
-    list_of_dicts = []
-    
+    # start going through potential branches and solve
     board, possible_vals_dict = solver_2_helper(board)
-    #shortest_ind = shortest_list(possible_vals_dict)
-
-    changed_ind = []
-    excluded_guesses = []
-    
-    while True:
+    if 0 not in board:
+        # Finito, solved
+        return board
+    #print(possible_vals_dict)
+    num_comb = sum([len(v) for k, v in possible_vals_dict.items()])
+    print(num_comb)
+    # go until all branches have been explored
+    for i in range(num_comb):
         board, possible_vals_dict = solver_2_helper(board)
-
-        if 0 not in board:
-            return board
-
         shortest_ind = shortest_list(possible_vals_dict)
+        print(possible_vals_dict)
         print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
-        changed_ind.append(shortest_ind)
-        for i in range(len(possible_vals_dict[shortest_ind])):
-            guess = possible_vals_dict[shortest_ind][i]
+        if 0 not in board:
+            # Finito, solved
+            return board
+        
+        for j in range(len(possible_vals_dict[shortest_ind])):
+            guess = possible_vals_dict[shortest_ind][j]
+            print(f"j: {j}, guess: {guess}")
             board[shortest_ind//9][shortest_ind%9] = guess
                 
-        # check if guess is definitely invalid
-        invalid = check_invalidity(board, shortest_ind//9, shortest_ind%9)
-        if invalid:
-            print("invalid")
-            continue
-
-    """
-        while True:
-        board, possible_vals_dict = solver_2_helper(board)
-        shortest_ind = shortest_list(possible_vals_dict)
-        for i in range(len(possible_vals_dict[shortest_ind])):
-            guess = possible_vals_dict[shortest_ind][i]
-            board[shortest_ind//9][shortest_ind%9] = guess
-            
             # check if guess is definitely invalid
             invalid = check_invalidity(board, shortest_ind//9, shortest_ind%9)
             if invalid:
@@ -136,27 +124,26 @@ def brute_force_solution(board):
             
             # try to solve the board as far as possible
             board, possible_vals_dict = solver_2_helper(board)
-            bp.print_board(board)
-            shortest_ind = shortest_list(possible_vals_dict)
-            print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
+            #bp.print_board(board)
+            #shortest_ind = shortest_list(possible_vals_dict)
+            #print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
             
             # return if finished
             if 0 not in board:
                 return board
-
-            # finally rule out guess
-
-    """
-
     
-    return old_board
+    return board
 
 def solver_2(board):
-    possible_vals_dict = {}
     #board, possible_vals_dict = solver_2_helper(board)
     old_board = board.copy()
-    board = brute_force_solution(board)
+    while True:
+        board = brute_force_solution(board)
+        break
     return board
+    if 0 not in board:
+        # Finito, solved
+        return
 
 
 def solver(board, method=1):
@@ -168,7 +155,7 @@ def solver(board, method=1):
 def main():
     random.seed(123)
     empty_board = np.zeros((9,9), dtype=np.uint8)
-    sudoku = gen.gen(empty_board, 30)
+    sudoku = gen.gen(empty_board, 32)
     bp.print_board(sudoku)
     time1 = time.time()
     solved_sudoku = solver(sudoku, 2)
