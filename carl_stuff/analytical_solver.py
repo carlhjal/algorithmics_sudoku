@@ -82,37 +82,73 @@ def check_invalidity(board, row, column):
     col_unique = np.unique(board[:,column])
     all_unique = np.unique(np.concatenate((quad_unique, row_unique, col_unique)))
     zero = [num for num in range(0,10) if num not in all_unique]
-    #print(zero)
     if 0 in zero:
         return True
     return False
 
 def brute_force_solution(board):
+    """Im gonna have a meltdown"""
     list_of_dicts = []
-    old_board = board.copy()
-    board, possible_vals_dict = solver_2_helper(board)
-    shortest_ind = shortest_list(possible_vals_dict)
-    print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
     
-    for i in range(len(possible_vals_dict[shortest_ind])):
-        guess = possible_vals_dict[shortest_ind][i]
+    board, possible_vals_dict = solver_2_helper(board)
+    #shortest_ind = shortest_list(possible_vals_dict)
 
+    changed_ind = []
+    excluded_guesses = []
+    
+    while True:
+        board, possible_vals_dict = solver_2_helper(board)
+
+        if 0 not in board:
+            return board
+
+        shortest_ind = shortest_list(possible_vals_dict)
+        print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
+        changed_ind.append(shortest_ind)
+        for i in range(len(possible_vals_dict[shortest_ind])):
+            guess = possible_vals_dict[shortest_ind][i]
+            board[shortest_ind//9][shortest_ind%9] = guess
+                
         # check if guess is definitely invalid
         invalid = check_invalidity(board, shortest_ind//9, shortest_ind%9)
         if invalid:
             print("invalid")
             continue
 
-        board[shortest_ind//9][shortest_ind%9] = guess
+    """
+        while True:
+        board, possible_vals_dict = solver_2_helper(board)
+        shortest_ind = shortest_list(possible_vals_dict)
+        for i in range(len(possible_vals_dict[shortest_ind])):
+            guess = possible_vals_dict[shortest_ind][i]
+            board[shortest_ind//9][shortest_ind%9] = guess
+            
+            # check if guess is definitely invalid
+            invalid = check_invalidity(board, shortest_ind//9, shortest_ind%9)
+            if invalid:
+                print("invalid")
+                continue
 
-        # try to solve the whole thing by bruteforcing the rest
-        for i in range(len(possible_vals_dict.keys())):
-            pass
-        
-        #board = brute_force_solution(board)
-        #bp.print_board(board)
-        if 0 not in board:
-            return board
+            # try to fast solve the whole board
+            solved = solver_1(board)
+            if 0 not in solved:
+                return solved
+            
+            # try to solve the board as far as possible
+            board, possible_vals_dict = solver_2_helper(board)
+            bp.print_board(board)
+            shortest_ind = shortest_list(possible_vals_dict)
+            print(f"shortest ind: {shortest_ind}, {possible_vals_dict[shortest_ind]}")
+            
+            # return if finished
+            if 0 not in board:
+                return board
+
+            # finally rule out guess
+
+    """
+
+    
     return old_board
 
 def solver_2(board):
