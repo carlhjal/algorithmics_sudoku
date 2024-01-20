@@ -1,4 +1,13 @@
 import time
+
+# Stores the positions of empty cells
+empty_cells = []
+
+# Hash tables to track used numbers in rows, columns, and boxes
+row_used = [set() for _ in range(9)]
+col_used = [set() for _ in range(9)]
+box_used = [set() for _ in range(9)]
+
 def print_grid(arr):
 	for i in range(9):
 		for j in range(9):
@@ -61,40 +70,30 @@ def solve_sudoku(arr):
 
 			# if it fails, undo it adn try again
 			arr[row][col] = 0
-			
 	# this triggers backtracking	 
 	return False
 
 if __name__=="__main__":
-	
-	grid =[[0 for x in range(9)]for y in range(9)]
+	grid = [[0 for x in range(9)]for y in range(9)]
 
-	#hard sudoku
-	grid =[[0,5,0,0,0,0,0,0,0],
-			[0,0,0,0,0,0,1,0,0],
-			[0,0,8,0,0,0,7,9,0],
-			[8,0,0,0,1,5,0,0,2],
-			[0,0,6,8,0,4,0,0,0],
-			[2,0,0,0,6,0,4,0,1],
-			[0,0,0,0,0,7,0,0,9],
-			[0,1,9,0,0,0,0,5,0],
-			[6,4,7,0,0,0,0,0,0]]
-	
-	#easy sudoku
-	# grid= [[5,0,0,4,6,7,3,0,9],
-    # [9,0,3,8,1,0,4,2,7],
-    # [1,7,4,2,0,3,0,0,0],
-    # [2,3,1,9,7,6,8,5,4],
-    # [8,5,7,1,2,4,0,9,0],
-    # [4,9,6,3,0,8,1,7,2],
-    # [0,0,0,0,8,9,2,6,0],
-    # [7,8,2,6,4,1,0,0,5],
-    # [0,1,0,0,0,0,7,0,8]]
-	
-	start= time.time()
-	if(solve_sudoku(grid)):
-		end= time.time()
+	# assigning values to the grid
+	grid =[[3, 0, 6, 5, 0, 8, 4, 0, 0],
+		[5, 2, 0, 0, 0, 0, 0, 0, 0],
+		[0, 8, 7, 0, 0, 0, 0, 3, 1],
+		[0, 0, 3, 0, 1, 0, 0, 8, 0],
+		[9, 0, 0, 8, 6, 3, 0, 0, 5],
+		[0, 5, 0, 0, 9, 0, 6, 0, 0],
+		[1, 3, 0, 0, 0, 0, 2, 5, 0],
+		[0, 0, 0, 0, 0, 0, 0, 7, 4],
+		[0, 0, 5, 2, 0, 6, 3, 0, 0]]
+	if grid is not None:
+		start = time.time()
+		solve_sudoku(grid)
+		end = time.time()
 		print_grid(grid)
 		print("Time taken: ", end-start,"seconds")
+
 	else:
-		print ("No solution was found")
+		print("No grid selected.")
+
+
